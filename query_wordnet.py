@@ -6,7 +6,6 @@ from nltk.corpus import wordnet as wn
 
 
 def get_ic(ic_str):
-    @lru_cache(maxsize=1)
     def into_corpus(dirstr):
         import pandas as pd
         from nltk.tokenize import word_tokenize
@@ -31,17 +30,32 @@ def get_ic(ic_str):
     if os.path.exists(ic_str):
         if os.path.isdir(ic_str):
             print("Assuming path leads to EITHER txt or twitter csv.gz files")
-            return into_corpus(ic_str)
-        elif ic_str == "brown":
-            from nltk.corpus import brown
-            return brown
-        elif ic_str == "web":
-            from nltk.corpus import webtext
-            return webtext
+            return wn.ic(into_corpus(ic_str), False, 0.)
         elif ic_str.endswith(".dat"):  # assume this is a wordnet corpus.
             return wn.WordNetICCorpusReader(ic_str)
         else:
             raise NotImplementedError
+    elif type(ic_str) == str:
+        if ic_str == "brown":
+            try:
+                from nltk.corpus import brown
+            except LookupError:
+                import nltk
+                nltk.download('brown')
+                from nltk.corpus import webtext
+            return wn.ic(brown, False, 0.)
+        elif ic_str == "web":
+            try:
+                from nltk.corpus import webtext
+            except LookupError:
+                import nltk
+                nltk.download('webtext')
+                from nltk.corpus import webtext
+            return wn.ic(webtext, False, 0.)
+        else:
+            raise NotImplementedError
+    else:
+        raise NotImplementedError
 
 
 def syn_matrix(word1, word2, ic=None):
@@ -63,9 +77,9 @@ def syn_matrix(word1, word2, ic=None):
 
     if ic is None:
         return ic_none(word1, word2)
-    elif ic is str:
+    elif type(ic) == str:
         return ic_some(word1, word2, get_ic(ic))
-    elif ic is dict:
+    elif type(ic) == dict:
         return ic_some(word1, word2, ic)
     else:
         raise TypeError("Weird type of IC in syn_matrix: " + str(type(ic)))
