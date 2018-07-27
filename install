@@ -1,0 +1,2 @@
+python3 -m venv ./wordnet_env
+source ./wordnet_env/bin/activate
