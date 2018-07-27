@@ -1,3 +1,4 @@
+import sys
 import os
 
 from nltk.corpus import wordnet as wn
@@ -41,3 +42,6 @@ def max_similarity(word1, word2):
         return max(syn_matrix(word1, word2))
     except ValueError:
         return 0  # syn_matrix couldn't be generated.
+
+if __name__ == "__main__":
+    print(locals()[sys.argv[1]](*sys.argv[2:]))
